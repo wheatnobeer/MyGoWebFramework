@@ -17,5 +17,8 @@ func main() {
 		}
 	})
 
-	r.Run(":9999")
+	err := r.Run(":9999")
+	if err != nil {
+		return
+	}
 }
