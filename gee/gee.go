@@ -12,7 +12,7 @@ type Engine struct {
 
 func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	c := NewContext(writer, request)
-	e.router.handel(c)
+	e.router.handle(c)
 }
 
 func (e *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
