@@ -18,6 +18,32 @@ type Context struct {
 	Params map[string]string
 	// response info
 	StatusCode int
+	// middleware
+	handlers []HandlerFunc
+	index    int
+}
+
+func NewContext(w http.ResponseWriter, req *http.Request) *Context {
+	return &Context{
+		Path:   req.URL.Path,
+		Method: req.Method,
+		Req:    req,
+		Writer: w,
+		index:  -1,
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }
 
 func (c *Context) Param(key string) string {
@@ -25,17 +51,8 @@ func (c *Context) Param(key string) string {
 	return value
 }
 
-func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
-	return &Context{
-		Writer: writer,
-		Req:    req,
-		Path:   req.URL.Path,
-		Method: req.Method,
-	}
-}
-
-func (c *Context) SetHeader(key string, value string) {
-	c.Writer.Header().Set(key, value)
+func (c *Context) PostForm(key string) string {
+	return c.Req.FormValue(key)
 }
 
 func (c *Context) Query(key string) string {
@@ -47,8 +64,8 @@ func (c *Context) Status(code int) {
 	c.Writer.WriteHeader(code)
 }
 
-func (c *Context) PostForm(key string) string {
-	return c.Req.FormValue(key)
+func (c *Context) SetHeader(key string, value string) {
+	c.Writer.Header().Set(key, value)
 }
 
 func (c *Context) String(code int, format string, values ...interface{}) {
