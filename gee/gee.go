@@ -92,3 +92,9 @@ func (e *Engine) Run(addr string) (err error) {
 func (group *RouterGroup) name(middlewares ...HandlerFunc) {
 	group.middlewares = append(group.middlewares, middlewares...)
 }
+
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger())
+	return engine
+}
